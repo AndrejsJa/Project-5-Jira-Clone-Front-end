@@ -3,29 +3,35 @@
  */
 import IssueModal from "../../pages/IssueModal";
 
+const issueTitle = 'This is an issue of type: Task.';
+
 describe('Issue delete', () => {
-  beforeEach(() => {
+  before(() => {
     cy.visit('/');
     cy.url().should('eq', `${Cypress.env('baseUrl')}project/board`).then((url) => {
-      //open issue detail modal with title from line 16  
       cy.contains(issueTitle).click();
     });
   });
 
-  //issue title, that we are testing with, saved into variable
-  const issueTitle = 'This is an issue of type: Task.';
-
   it('Should delete issue successfully', () => {
+    const expectedAmountOfIssuesAfterDeletion = 3;
+
     IssueModal.clickDeleteButton();
     IssueModal.confirmDeletion();
     IssueModal.ensureIssueIsNotVisibleOnBoard(issueTitle);
-  })
-  
-  it('Should cancel deletion process successfully', () => {
-    IssueModal.clickDeleteButton();
-    IssueModal.cancelDeletion();
-    IssueModal.closeDetailModal();
-    IssueModal.ensureIssueIsVisibleOnBoard(issueTitle);
+    IssueModal.validateAmountOfIssuesInBacklog(expectedAmountOfIssuesAfterDeletion);
   });
 
-})
+  it.only('Should cancel delete issue process successfully', () => {
+    cy.url().should('eq', `${Cypress.env('baseUrl')}project/board`).then((url) => {
+      cy.contains(issueTitle).click();
+      const expectedAmountOfIssuesAfterCancel = 4;
+
+      IssueModal.clickDeleteButton();
+      IssueModal.cancelDeletion();
+      IssueModal.closeDetailModal();
+      IssueModal.ensureIssueIsVisibleOnBoard(issueTitle);
+      IssueModal.validateAmountOfIssuesInBacklog(expectedAmountOfIssuesAfterCancel);
+    });
+  });
+});  
